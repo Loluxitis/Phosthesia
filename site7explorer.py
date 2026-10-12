@@ -138,7 +138,7 @@ def place(obj,x,y,tr,tg,tb,selectable=False):
     if tb:
       draw_string(obj.b,screenx,screeny+20,(0,0,b),black)
 
-def findTarget(orient, x, y, objects):
+def findTarget(orient,x,y,objects):
   angle=orient*2*pi/700
   target=None
   nearest=50
@@ -158,7 +158,6 @@ def findTarget(orient, x, y, objects):
     if abs(screenx-160)<=30:
       target=obj
       nearest=depth
-
   return target
 
 def livescreen(orient,x,y,objects,tr,tg,tb):
@@ -167,7 +166,7 @@ def livescreen(orient,x,y,objects,tr,tg,tb):
   fill_rect(0,50,320,122,black)
 
   target=findTarget(orient,x,y,objects)
-
+  
   for obj in objects:
     dx=obj.x-x
     dy=obj.y-y
@@ -238,13 +237,14 @@ frame()
 orient=50
 x=0.0
 y=0.0
-moveSpd=2
+moveSpd=4
 turnSpd=2
 tr=tg=tb=True
 objects=[]
 
 message=""
 ok_was_down=False
+target=None
 
 room=0
 create(objects,room)
@@ -265,15 +265,18 @@ while on:
   x+=d*cos(angle)
   y+=d*sin(angle)
   
-  livescreen(orient,x,y,objects,tr,tg,tb)
+  target = livescreen(orient,x,y,objects,tr,tg,tb)
   UIbottom(orient)
-
-  if message:
-    draw_string(message,5,155,white,black)
 
   ok_down=keydown(KEY_OK)
   if ok_down and not ok_was_down and target is not None:
     oldRoom=room
+    ok_was_down=True
+    room=interact(target,room)[0]
+    message=interact(target,room)[1]
+    objects=[]
+    create(objects,room)
+    draw_string(message,100,25,white,black)
   
   if keydown(KEY_EIGHT):
     tg=not tg
@@ -305,3 +308,4 @@ while on:
       fill_rect(150+int(obj.x/20),100+int(obj.y/20),5,5,red)
 while not on:
   deathscreen(10)
+  
