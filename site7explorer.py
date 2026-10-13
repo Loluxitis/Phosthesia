@@ -9,6 +9,7 @@ black=(10,10,10)
 red=(255,0,0)
 blue=(0,0,255)
 green=(0,255,0)
+brightnessCoef=300
 
 def briefingEng():
   fill_rect(0,0,320,222,black)
@@ -38,7 +39,7 @@ def icon(x,y,col):
   rectadd(x-8,y+5,8,10,col[0],col[1],col[2])
   rectadd(x+10,y+5,8,10,col[0],col[1],col[2])
 
-def deathscreen(i):
+def deathscreen(i,text):
   y=randint(1,222)
   condition=randint(1,100)
 
@@ -46,17 +47,18 @@ def deathscreen(i):
   fill_rect(0,y,320,3,(10,10,10))
   fill_rect(randint(1,300),y,200,1,white)
   fill_rect(0,y,320,1,(i+randint(-i,i),i+randint(-i,i),i+randint(-i,i)))
-
+  
+  tx=160-(len(text)*5)
   if condition>94:
     fill_rect(0,0,320,222,black)
   elif condition==93:
-    draw_string("no_signal",115,105,red,black)
+    draw_string(text,tx+5,105,red,black)
   elif condition==92:
-    draw_string("no_signal",105,100,green,black)
+    draw_string(text,tx-5,100,green,black)
   elif condition==91:
-    draw_string("no_signal",111,107,blue,black)
+    draw_string(text,tx+1,107,blue,black)
   else:
-    draw_string("no_signal",110,100,white,black)
+    draw_string(text,tx,100,white,black)
     icon(150,50,red)
     icon(152,50,green)
     icon(151,51,blue)
@@ -79,8 +81,8 @@ def interact(obj,room):
   destinations={
     "to_entry":0,
     "to_hub":1,
-    "to_labs":2,
-    "to_admin":3
+    "to_admin":2,
+    "to_labs":3
   }
 
   if obj.g=="door":
@@ -94,7 +96,7 @@ def interact(obj,room):
     return room,"DATA UNIT: NO RESPONSE"
 
   if obj.b=="pickup?":
-    return room,"UNKNOWN OBJECT: NO DATA"
+    return room,"UNKNOWN OBJECT ACQUIRED"
 
   return room,"NO INTERACTION AVAILABLE"    
 
@@ -121,7 +123,7 @@ def place(obj,x,y,tr,tg,tb,selectable=False):
     return
 
   screeny=int(horizon+72/depth)
-  bright=min((1,120/(depth+12)))
+  bright=min((1,brightnessCoef/(depth+12)))
   r=int(255*bright)
   g=int(255*bright)
   b=int(255*bright)
@@ -225,9 +227,13 @@ def create(list,indx):
   ["white","flat","public",500,-700],
   ["broken","abstract","pickup?",20,50],
   ["cold","lump","obsolete_equipment",-700,-500]]
-  r3=[]
+  admin=[["solid","door","to_hub",0,-700],
+  ["solid","box","locker_A1",-300,-600],
+  ["solid","box","locker_A2",-300,-400],
+  ["solid","box","locker_A3",-300,-200],
+  ["solid","box","locker_A4",-300,0]]
   r4=[]
-  rooms=[entry,hub,r3,r4]
+  rooms=[entry,hub,admin,r4]
   room=rooms[indx]
   for i in range(len(room)):
     list.append(Entity(room[i][0],room[i][1],room[i][2],room[i][3],room[i][4]))
@@ -276,7 +282,11 @@ while on:
     message=interact(target,room)[1]
     objects=[]
     create(objects,room)
-    draw_string(message,100,25,white,black)
+    frame()
+    for n in range(30):
+      deathscreen(10,message)
+    UItop(tr,tg,tb)
+  ok_was_down=False
   
   if keydown(KEY_EIGHT):
     tg=not tg
@@ -307,5 +317,4 @@ while on:
     for obj in objects:
       fill_rect(150+int(obj.x/20),100+int(obj.y/20),5,5,red)
 while not on:
-  deathscreen(10)
-  
+  deathscreen(10,"no_signal")
